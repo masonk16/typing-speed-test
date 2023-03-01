@@ -8,8 +8,8 @@ import random
 class Game:
 
     def __init__(self):
-        self.w = 750
-        self.h = 500
+        self.width = 750
+        self.height = 500
         self.reset = True
         self.active = False
         self.input_text = ''
@@ -26,23 +26,56 @@ class Game:
 
         pygame.init()
         self.open_img = pygame.image.load('type-speed-open.png')
-        self.open_img = pygame.transform.scale(self.open_img, (self.w, self.h))
+        self.open_img = pygame.transform.scale(self.open_img, (self.width, self.height))
 
         self.bg = pygame.image.load('img/background.jpg')
         self.bg = pygame.transform.scale(self.bg, (500, 750))
 
-        self.screen = pygame.display.set_mode((self.w, self.h))
+        self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption('Type Speed test')
 
     def draw_text(self, screen, msg, y, f_size, color):
         font = pygame.font.Font(None, f_size)
         text = font.render(msg, 1, color)
-        text_rect = text.get_rect(center=(self.w / 2, y))
+        text_rect = text.get_rect(center=(self.width / 2, y))
         screen.blit(text, text_rect)
         pygame.display.update()
 
     def get_sentence(self):
-        f = open('sentences.txt').read()
+        f = open('data/sentences.txt').read()
         sentences = f.split('\n')
         sentence = random.choice(sentences)
         return sentence
+
+    def show_results(self, screen):
+        if not self.end:
+            # Calculate time
+            self.total_time = time.time() - self.time_start
+
+            # Calculate accuracy
+            count = 0
+            for i, c in enumerate(self.word):
+                try:
+                    if self.input_text[i] == c:
+                        count += 1
+                except:
+                    pass
+            self.accuracy = count / len(self.word) * 100
+
+            # Calculate words per minute
+            self.wpm = len(self.input_text) * 60 / (5 * self.total_time)
+            self.end = True
+            print(self.total_time)
+
+            self.results = 'Time:' + str(round(self.total_time)) + " secs Accuracy:" + str(
+                round(self.accuracy)) + "%" + ' Wpm: ' + str(round(self.wpm))
+
+            # draw icon image
+            self.time_img = pygame.image.load('img/icon.png')
+            self.time_img = pygame.transform.scale(self.time_img, (150, 150))
+            # screen.blit(self.time_img, (80,320))
+            screen.blit(self.time_img, (self.width / 2 - 75, self.height - 140))
+            self.draw_text(screen, "Reset", self.height - 70, 26, (100, 100, 100))
+
+            print(self.results)
+            pygame.display.update()
